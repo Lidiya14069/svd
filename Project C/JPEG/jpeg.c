@@ -16,13 +16,13 @@ static const int Q[8][8] = {
 };
 
 static double get_gray(const Image *img, int x, int y) {
-    if (x >= img->width) x = img->width - 1;
-    if (y >= img->height) y = img->height - 1;
+    if (x >= img -> width) x = img -> width - 1;
+    if (y >= img -> height) y = img -> height - 1;
 
-    int id = (y * img->width + x) * 3;
-    double r = img->data[id + 0];
-    double g = img->data[id + 1];
-    double b = img->data[id + 2];
+    int id = (y * img -> width + x) * 3;
+    double r = img -> data[id + 0];
+    double g = img -> data[id + 1];
+    double b = img -> data[id + 2];
 
     return 0.299 * r + 0.587 * g + 0.114 * b;
 }
@@ -32,18 +32,18 @@ int jpeg_like_compress_with_stats(const Image *src, Image *dst, int quality_scal
     if (quality_scale < 1) quality_scale = 1;
 
     if (stats) {
-        stats->total_coeffs = 0;
-        stats->nonzero_coeffs = 0;
-        stats->estimated_bytes = 0;
+        stats -> total_coeffs = 0;
+        stats -> nonzero_coeffs = 0;
+        stats -> estimated_bytes = 0;
     }
 
-    dst->width = src->width;
-    dst->height = src->height;
-    dst->data = (unsigned char *)malloc(dst->width * dst->height * 3);
-    if (!dst->data) return 1;
+    dst -> width = src -> width;
+    dst -> height = src -> height;
+    dst -> data = (unsigned char *)malloc(dst -> width * dst -> height * 3);
+    if (!dst -> data) return 1;
 
-    for (int by = 0; by < src->height; by += 8) {
-        for (int bx = 0; bx < src->width; bx += 8) {
+    for (int by = 0; by < src -> height; by += 8) {
+        for (int bx = 0; bx < src -> width; bx += 8) {
             double block[8][8];
             double coeffs[8][8];
             double restored[8][8];
@@ -62,7 +62,7 @@ int jpeg_like_compress_with_stats(const Image *src, Image *dst, int quality_scal
                     coeffs[i][j] = round(coeffs[i][j] / q) * q;
 
                     if (stats) {
-                        stats->total_coeffs++;
+                        stats -> total_coeffs++;
                         if (coeffs[i][j] != 0.0) {
                             stats->nonzero_coeffs++;
                         }
@@ -77,13 +77,13 @@ int jpeg_like_compress_with_stats(const Image *src, Image *dst, int quality_scal
                     int x = bx + j;
                     int y = by + i;
 
-                    if (x < src->width && y < src->height) {
+                    if (x < src -> width && y < src->height) {
                         unsigned char v = clamp_to_byte(restored[i][j] + 128.0);
                         int id = (y * dst->width + x) * 3;
 
-                        dst->data[id + 0] = v;
-                        dst->data[id + 1] = v;
-                        dst->data[id + 2] = v;
+                        dst -> data[id + 0] = v;
+                        dst -> data[id + 1] = v;
+                        dst -> data[id + 2] = v;
                     }
                 }
             }
@@ -91,7 +91,7 @@ int jpeg_like_compress_with_stats(const Image *src, Image *dst, int quality_scal
     }
 
     if (stats) {
-        stats->estimated_bytes = stats->nonzero_coeffs * (long)sizeof(short);
+        stats -> estimated_bytes = stats -> nonzero_coeffs * (long)sizeof(short);
     }
 
     return 0;
