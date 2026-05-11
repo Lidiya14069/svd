@@ -1,0 +1,9 @@
+method,param,psnr,ssim,time_ms,estimated_bytes,compression_ratio,compression_percent,file
+JPEG-like,q=1,28.4627,0.989892,15.76,7886,6.23,83.96,output/jpeg_q1.bmp
+JPEG-like,q=2,25.2977,0.978831,16.95,5566,8.83,88.68,output/jpeg_q2.bmp
+JPEG-like,q=4,22.7371,0.961118,16.54,3788,12.98,92.29,output/jpeg_q4.bmp
+JPEG-like,q=8,20.9418,0.941259,16.61,2368,20.76,95.18,output/jpeg_q8.bmp
+SVD,k=5,16.9439,0.828688,212.76,10280,4.78,79.09,output/svd_k5.bmp
+SVD,k=10,18.9324,0.900086,207.91,20560,2.39,58.17,output/svd_k10.bmp
+SVD,k=20,21.5240,0.950361,212.02,41120,1.20,16.34,output/svd_k20.bmp
+SVD,k=30,23.2148,0.969347,222.43,61680,0.80,-25.49,output/svd_k30.bmp
