@@ -3,17 +3,17 @@
 #include <math.h>
 
 static double gray_at(const Image *img, int i) {
-    double r = img->data[i * 3 + 0];
-    double g = img->data[i * 3 + 1];
-    double b = img->data[i * 3 + 2];
+    double r = img -> data[i * 3 + 0];
+    double g = img -> data[i * 3 + 1];
+    double b = img -> data[i * 3 + 2];
 
     return 0.299 * r + 0.587 * g + 0.114 * b;
 }
 
 double psnr(const Image *a, const Image *b) {
-    if (a->width != b->width || a->height != b->height) return 0.0;
+    if (a -> width != b -> width || a -> height != b -> height) return 0.0;
 
-    int n = a->width * a->height;
+    int n = a -> width * a -> height;
     double mse = 0.0;
 
     for (int i = 0; i < n; i++) {
@@ -30,9 +30,9 @@ double psnr(const Image *a, const Image *b) {
 }
 
 double ssim_simple(const Image *a, const Image *b) {
-    if (a->width != b->width || a->height != b->height) return 0.0;
+    if (a -> width != b -> width || a -> height != b -> height) return 0.0;
 
-    int n = a->width * a->height;
+    int n = a -> width * a -> height;
     double mean_a = 0.0;
     double mean_b = 0.0;
 
