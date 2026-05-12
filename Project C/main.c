@@ -19,7 +19,7 @@ static int already_processed(const int *values, int count, int value) {
 }
 
 static long estimate_svd_bytes(const Image *img, int k) {
-    return (long)k * (img->height + img->width + 1) * (long)sizeof(double);
+    return (long)k * (img -> height + img -> width + 1) * (long) sizeof (double);
 }
 
 static double compression_ratio(long original_bytes, long compressed_bytes) {
