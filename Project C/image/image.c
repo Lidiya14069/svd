@@ -37,10 +37,10 @@ unsigned char clamp_to_byte(double x) {
 void free_image(Image *img) {
     if (!img) return;
 
-    free(img->data);
-    img->data = NULL;
-    img->width = 0;
-    img->height = 0;
+    free(img -> data);
+    img -> data = NULL;
+    img -> width = 0;
+    img -> height = 0;
 }
 
 int read_bmp(const char *filename, Image *img) {
@@ -75,8 +75,8 @@ int read_bmp(const char *filename, Image *img) {
     int abs_height = height > 0 ? height : -height;
     int row_padded = (width * 3 + 3) & (~3);
 
-    unsigned char *data = (unsigned char *)malloc(width * abs_height * 3);
-    unsigned char *row = (unsigned char *)malloc(row_padded);
+    unsigned char *data = (unsigned char *) malloc (width * abs_height * 3);
+    unsigned char *row = (unsigned char *) malloc (row_padded);
 
     if (!data || !row) {
         free(data);
@@ -110,9 +110,9 @@ int read_bmp(const char *filename, Image *img) {
     free(row);
     fclose(f);
 
-    img->width = width;
-    img->height = abs_height;
-    img->data = data;
+    img -> width = width;
+    img -> height = abs_height;
+    img -> data = data;
     return 0;
 }
 
@@ -120,8 +120,8 @@ int write_bmp(const char *filename, const Image *img) {
     FILE *f = fopen(filename, "wb");
     if (!f) return 1;
 
-    int width = img->width;
-    int height = img->height;
+    int width = img -> width;
+    int height = img -> height;
     int row_padded = (width * 3 + 3) & (~3);
     int image_size = row_padded * height;
 
@@ -146,7 +146,7 @@ int write_bmp(const char *filename, const Image *img) {
     fwrite(&file_header, sizeof(file_header), 1, f);
     fwrite(&info_header, sizeof(info_header), 1, f);
 
-    unsigned char *row = (unsigned char *)calloc(row_padded, 1);
+    unsigned char *row = (unsigned char *) calloc (row_padded, 1);
     if (!row) {
         fclose(f);
         return 1;
@@ -159,9 +159,9 @@ int write_bmp(const char *filename, const Image *img) {
             int src = (y * width + x) * 3;
             int dst = x * 3;
 
-            row[dst + 0] = img->data[src + 2];
-            row[dst + 1] = img->data[src + 1];
-            row[dst + 2] = img->data[src + 0];
+            row[dst + 0] = img -> data[src + 2];
+            row[dst + 1] = img -> data[src + 1];
+            row[dst + 2] = img -> data[src + 0];
         }
 
         fwrite(row, 1, row_padded, f);
