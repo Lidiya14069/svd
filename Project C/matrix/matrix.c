@@ -3,11 +3,11 @@
 #include <stdlib.h>
 
 double **matrix_alloc(int rows, int cols) {
-    double **a = (double **)malloc(rows * sizeof(double *));
+    double **a = (double **) malloc (rows * sizeof(double *));
     if (!a) return NULL;
 
     for (int i = 0; i < rows; i++) {
-        a[i] = (double *)calloc(cols, sizeof(double));
+        a[i] = (double *) calloc (cols, sizeof(double));
         if (!a[i]) {
             for (int j = 0; j < i; j++) {
                 free(a[j]);
