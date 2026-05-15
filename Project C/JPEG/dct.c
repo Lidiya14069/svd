@@ -2,44 +2,51 @@
 
 #include <math.h>
 
-#define PI 3.14159265358979323846
+#define PI 3.14159265358979323846 // число пи для вычисления косинуса
 
-static double alpha(int u) {
+static double alpha(int u) { // функция коэффицента alpha для dct
     return u == 0 ? 1.0 / sqrt(2.0) : 1.0;
 }
 
-void dct_8x8(double input[8][8], double output[8][8]) {
-    for (int u = 0; u < 8; u++) {
+void dct_8x8(double input[8][8], double output[8][8]) { // прямого дискретного косинусного преобразования 8*8
+    
+    // перебо координат выходной матрицы
+    for (int u = 0; u < 8; u++) { 
         for (int v = 0; v < 8; v++) {
-            double sum = 0.0;
+            double sum = 0.0; // сумма для текущего коэффицента
 
+            // перебор всех элементов входящего блока
             for (int x = 0; x < 8; x++) {
                 for (int y = 0; y < 8; y++) {
-                    sum += input[x][y] *
-                           cos(((2 * x + 1) * u * PI) / 16.0) *
-                           cos(((2 * y + 1) * v * PI) / 16.0);
+                    sum += input[x][y] * 
+                        cos(((2 * x + 1) * u * PI) / 16.0) * // косинус по х
+                        cos(((2 * y + 1) * v * PI) / 16.0); // косинус по у
                 }
             }
 
-            output[u][v] = 0.25 * alpha(u) * alpha(v) * sum;
+            output[u][v] = 0.25 * alpha(u) * alpha(v) * sum; // вычисление итогового dct коэффицента
         }
     }
 }
 
-void idct_8x8(double input[8][8], double output[8][8]) {
+void idct_8x8(double input[8][8], double output[8][8]) { // обратного дискретного косинусного преобразования 8*8
+
+    //перебор координат восстанавливаемого пикселя
     for (int x = 0; x < 8; x++) {
         for (int y = 0; y < 8; y++) {
-            double sum = 0.0;
+            double sum = 0.0; // сумма для текущего пикселя
 
+            //перебор всех dct коэффицентов
             for (int u = 0; u < 8; u++) {
                 for (int v = 0; v < 8; v++) {
-                    sum += alpha(u) * alpha(v) * input[u][v] *
-                           cos(((2 * x + 1) * u * PI) / 16.0) *
-                           cos(((2 * y + 1) * v * PI) / 16.0);
+                    sum += alpha(u) * alpha(v) * 
+                           input[u][v] * // коэфицент dct 
+                           cos(((2 * x + 1) * u * PI) / 16.0) * //косинус по х
+                           cos(((2 * y + 1) * v * PI) / 16.0); // по у
                 }
             }
 
-            output[x][y] = 0.25 * sum;
+            output[x][y] = 0.25 * sum; // восстановленое значение пикселя
         }
     }
 }
