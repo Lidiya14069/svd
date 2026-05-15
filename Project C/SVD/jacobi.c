@@ -3,74 +3,83 @@
 
 #include <math.h>
 
+//функ нахождения собственных значений и собственных векторов методом Якоби
 int jacobi_eigen(double **a, int n, double *eigenvalues, double **eigenvectors) {
-    if (!a || !eigenvalues || !eigenvectors || n <= 0) {
-        return 1;
+    if (!a || !eigenvalues || !eigenvectors || n <= 0) { // проверка корректности входных данных
+        return 1; // ошибка
     }
 
-    matrix_identity(eigenvectors, n);
+    matrix_identity(eigenvectors, n); //создание единичной матрицы собственных векторов
 
-    if (n == 1) {
-        eigenvalues[0] = a[0][0];
-        return 0;
+    if (n == 1) { // если матрица размера 1*1
+        eigenvalues[0] = a[0][0]; // единственное собственное значение равно элеменьу матрицы
+        return 0; //успех
     }
 
-    int max_iter = 100 * n * n;
-    double eps = 1e-8;
+    int max_iter = 100 * n * n; //максимальное число итераций метода
+    double eps = 1e-8; // точность вычислений 
 
+    // основной цикл метода Якоби
     for (int iter = 0; iter < max_iter; iter++) {
-        int p = 0;
+        //индексы максимального внедиагонального элемента
+        int p = 0; 
         int q = 1;
-        double max_val = fabs(a[p][q]);
+        
+        double max_val = fabs(a[p][q]); // начальное максимальное значение 
 
-        for (int i = 0; i < n; i++) {
+        //поиск максимального по модулю внедиагонального элемента
+        for (int i = 0; i < n; i++) { 
+            //просмотр элемента выше главной диагонали
             for (int j = i + 1; j < n; j++) {
-                if (fabs(a[i][j]) > max_val) {
-                    max_val = fabs(a[i][j]);
-                    p = i;
-                    q = j;
+                if (fabs(a[i][j]) > max_val) { // если найден элемент больше текущего максимума
+                    max_val = fabs(a[i][j]); // обновляю максимум
+                    p = i; // сохраняю индекс строки
+                    q = j; // столбца
                 }
             }
         }
 
-        if (max_val < eps) break;
+        if (max_val < eps) break; // если все внедиагональные лементы достаточно малы
 
-        double phi = 0.5 * atan2(2.0 * a[p][q], a[q][q] - a[p][p]);
-        double c = cos(phi);
-        double s = sin(phi);
+        double phi = 0.5 * atan2(2.0 * a[p][q], a[q][q] - a[p][p]); // вычисляю угл поворота
+        double c = cos(phi); // косинус угла 
+        double s = sin(phi);// синус угла
 
-        double app = c * c * a[p][p] - 2 * s * c * a[p][q] + s * s * a[q][q];
-        double aqq = s * s * a[p][p] + 2 * s * c * a[p][q] + c * c * a[q][q];
+        double app = c * c * a[p][p] - 2 * s * c * a[p][q] + s * s * a[q][q]; // новое значение элемеента a[p][p]
+        double aqq = s * s * a[p][p] + 2 * s * c * a[p][q] + c * c * a[q][q]; a[q][q]
 
-        a[p][p] = app;
-        a[q][q] = aqq;
-        a[p][q] = 0.0;
-        a[q][p] = 0.0;
+        a[p][p] = app; обновление диагонального элемента 
+        a[q][q] = aqq; // второго диагонального элемента
+        a[p][q] = 0.0; // зануление внедиагонального элемента
+        a[q][p] = 0.0; // симментричное зануление
 
+        // обновление остальных элементов матрицы
         for (int k = 0; k < n; k++) {
-            if (k != p && k != q) {
-                double akp = a[k][p];
-                double akq = a[k][q];
+            if (k != p && k != q) { // пропускаю строки p и q
+                double akp = a[k][p]; // старое значение  a[k][p]
+                double akq = a[k][q]; // старое значение a[k][q]
 
-                a[k][p] = c * akp - s * akq;
-                a[p][k] = a[k][p];
+                a[k][p] = c * akp - s * akq;  //вычисление нового значения a[k][p]
+                a[p][k] = a[k][p]; симметричное  обновление
 
-                a[k][q] = s * akp + c * akq;
-                a[q][k] = a[k][q];
+                a[k][q] = s * akp + c * akq; // вычисление нового значение a[k][q]
+                a[q][k] = a[k][q];// симментричное обновление
             }
         }
 
-        for (int k = 0; k < n; k++) {
-            double vkp = eigenvectors[k][p];
-            double vkq = eigenvectors[k][q];
+        //обновление матрицы собственных векторов
+        for (int k = 0; k < n; k++) { 
+            double vkp = eigenvectors[k][p]; // старое значение собственного вектора для р
+            double vkq = eigenvectors[k][q]; //для вектора q
 
-            eigenvectors[k][p] = c * vkp - s * vkq;
-            eigenvectors[k][q] = s * vkp + c * vkq;
+            eigenvectors[k][p] = c * vkp - s * vkq; // обновление компоненты p
+            eigenvectors[k][q] = s * vkp + c * vkq; // компоненты q
         }
     }
 
+    //запись собственных значений из диагонали матрицы
     for (int i = 0; i < n; i++) {
-        eigenvalues[i] = a[i][i];
+        eigenvalues[i] = a[i][i]; // диагональные элементы = собственные значения
     }
 
     return 0;
