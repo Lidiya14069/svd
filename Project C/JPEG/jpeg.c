@@ -67,45 +67,50 @@ int jpeg_like_compress_with_stats(const Image *src, Image *dst, int quality_scal
             // квантование коэффицентов
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 8; j++) {
-                    int q = Q[i][j] * quality_scale;
-                    coeffs[i][j] = round(coeffs[i][j] / q) * q;
+                    int q = Q[i][j] * quality_scale; // вычисляю коэф квантования 
+                    coeffs[i][j] = round(coeffs[i][j] / q) * q; // округляю и умножаю обратно 
 
-                    if (stats) {
-                        stats->total_coeffs++;
-                        if (coeffs[i][j] != 0.0) {
-                            stats->nonzero_coeffs++;
+                    // если нужна статистика
+                    if (stats) { 
+                        stats->total_coeffs++; // увеличиваю число коэф
+                        if (coeffs[i][j] != 0.0) { // если коэф ненулевой
+                            stats->nonzero_coeffs++; // увеличиваю счетчик
                         }
                     }
                 }
             }
 
-            idct_8x8(coeffs, restored);
+            idct_8x8(coeffs, restored); // обратное dct
 
+            //запись результата
             for (int i = 0; i < 8; i++) {
                 for (int j = 0; j < 8; j++) {
-                    int x = bx + j;
-                    int y = by + i;
+                    int x = bx + j; // координата х
+                    int y = by + i; //координата у
 
-                    if (x < src->width && y < src->height) {
-                        unsigned char v = clamp_to_byte(restored[i][j] + 128.0);
-                        int id = (y * dst->width + x) * 3;
+                    //проверка выхода за границы
+                    if (x < src->width && y < src->height) {  
+                        unsigned char v = clamp_to_byte(restored[i][j] + 128.0); // возвращаю диапазон 0...255
+                        int id = (y * dst->width + x) * 3; // индекс пикселя 
 
-                        dst->data[id + 0] = v;
-                        dst->data[id + 1] = v;
-                        dst->data[id + 2] = v;
+                        dst->data[id + 0] = v; // записываю красный
+                        dst->data[id + 1] = v; // зеленный
+                        dst->data[id + 2] = v; // синий
                     }
                 }
             }
         }
     }
 
+    // вычисляю примерный размер 
     if (stats) {
         stats->estimated_bytes = (stats->nonzero_coeffs + stats->block_count) * (long)sizeof(short);
     }
 
-    return 0;
+    return 0; //успешшное завершение
 }
 
+// упрощенная версия без статистики
 int jpeg_like_compress(const Image *src, Image *dst, int quality_scale) {
-    return jpeg_like_compress_with_stats(src, dst, quality_scale, NULL);
+    return jpeg_like_compress_with_stats(src, dst, quality_scale, NULL); // вызываю основную функцию
 }
