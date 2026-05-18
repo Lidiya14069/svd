@@ -1,77 +1,78 @@
-#include "metrics.h"
+#include "metrics.h" 
 
-#include <math.h>
+#include <math.h> 
 
-static double gray_at(const Image *img, int i) {
-    double r = img->data[i * 3 + 0];
-    double g = img->data[i * 3 + 1];
-    double b = img->data[i * 3 + 2];
+static double gray_at(const Image *img, int i) { // функция получает яркость пикселя по его номеру
+    double r = img->data[i * 3 + 0]; // беру красную компоненту пикселя
+    double g = img->data[i * 3 + 1]; // беру зелёную компоненту пикселя
+    double b = img->data[i * 3 + 2]; // беру синюю компоненту пикселя
 
-    return 0.299 * r + 0.587 * g + 0.114 * b;
+    return 0.299 * r + 0.587 * g + 0.114 * b; // возвращаю яркость пикселя по стандартной формуле
 }
 
-double psnr(const Image *a, const Image *b) {
-    if (a->width != b->width || a->height != b->height) return 0.0;
+double psnr(const Image *a, const Image *b) { // функция считает метрику PSNR для двух изображений
+    if (a->width != b->width || a->height != b->height) return 0.0; // если размеры разные, сравнивать нельзя
 
-    int n = a->width * a->height;
-    if (n <= 0) return 0.0;
+    int n = a->width * a->height; // считаю количество пикселей
+    if (n <= 0) return 0.0; // если пикселей нет, возвращаю 0
 
-    double mse = 0.0;
+    double mse = 0.0; // создаю переменную для среднеквадратичной ошибки
 
-    for (int i = 0; i < n; i++) {
-        double da = gray_at(a, i);
-        double db = gray_at(b, i);
-        double d = da - db;
-        mse += d * d;
-    }
+    for (int i = 0; i < n; i++) { // прохожу по всем пикселям
+        double da = gray_at(a, i); // получаю яркость пикселя первого изображения
+        double db = gray_at(b, i); // получаю яркость пикселя второго изображения
+        double d = da - db; // считаю разницу между яркостями
+        mse += d * d; // добавляю квадрат разницы к общей ошибке
+    } 
 
-    mse /= n;
-    if (mse == 0.0) return 99.0;
+    mse /= n; // делю сумму ошибок на количество пикселей
 
-    return 10.0 * log10((255.0 * 255.0) / mse);
+    if (mse == 0.0) return 99.0; // если ошибки нет, возвращаю большое значение PSNR
+
+    return 10.0 * log10((255.0 * 255.0) / mse); // считаю и возвращаю PSNR
 }
 
-double ssim_simple(const Image *a, const Image *b) {
-    if (a->width != b->width || a->height != b->height) return 0.0;
+double ssim_simple(const Image *a, const Image *b) { // функция считает упрощённую метрику SSIM
+    if (a->width != b->width || a->height != b->height) return 0.0; // если размеры разные, возвращаю 0
 
-    int n = a->width * a->height;
-    if (n <= 0) return 0.0;
+    int n = a->width * a->height; // считаю количество пикселей
+    if (n <= 0) return 0.0; // если пикселей нет, возвращаю 0
 
-    double mean_a = 0.0;
-    double mean_b = 0.0;
+    double mean_a = 0.0; // средняя яркость первого изображения
+    double mean_b = 0.0; // средняя яркость второго изображения
 
-    for (int i = 0; i < n; i++) {
-        mean_a += gray_at(a, i);
-        mean_b += gray_at(b, i);
+    for (int i = 0; i < n; i++) { // прохожу по всем пикселям
+        mean_a += gray_at(a, i); // добавляю яркость пикселя первого изображения
+        mean_b += gray_at(b, i); // добавляю яркость пикселя второго изображения
+    } 
+
+    mean_a /= n; // считаю среднюю яркость первого изображения
+    mean_b /= n; // считаю среднюю яркость второго изображения
+
+    if (n == 1) { // если в изображении только один пиксель
+        double c1 = 6.5025; // задаю стабилизирующую константу для формулы SSIM
+        return (2 * mean_a * mean_b + c1) / (mean_a * mean_a + mean_b * mean_b + c1); // считаю SSIM для одного пикселя
     }
 
-    mean_a /= n;
-    mean_b /= n;
+    double var_a = 0.0; // дисперсия яркости первого изображения
+    double var_b = 0.0; // дисперсия яркости второго изображения
+    double cov = 0.0; // ковариация яркостей двух изображений
 
-    if (n == 1) {
-        double c1 = 6.5025;
-        return (2 * mean_a * mean_b + c1) / (mean_a * mean_a + mean_b * mean_b + c1);
-    }
+    for (int i = 0; i < n; i++) { // снова прохожу по всем пикселям
+        double da = gray_at(a, i) - mean_a; // отклонение яркости первого изображения от среднего
+        double db = gray_at(b, i) - mean_b; // отклонение яркости второго изображения от среднего
 
-    double var_a = 0.0;
-    double var_b = 0.0;
-    double cov = 0.0;
+        var_a += da * da; // добавляю вклад в дисперсию первого изображения
+        var_b += db * db; // добавляю вклад в дисперсию второго изображения
+        cov += da * db; // добавляю вклад в ковариацию
+    } 
 
-    for (int i = 0; i < n; i++) {
-        double da = gray_at(a, i) - mean_a;
-        double db = gray_at(b, i) - mean_b; 
+    var_a /= n - 1; // считаю дисперсию первого изображения
+    var_b /= n - 1; // считаю дисперсию второго изображения
+    cov /= n - 1; // считаю ковариацию
 
-        var_a += da * da;
-        var_b += db * db;
-        cov += da * db;
-    }
+    double c1 = 6.5025; // первая стабилизирующая константа SSIM
+    double c2 = 58.5225; // вторая стабилизирующая константа SSIM
 
-    var_a /= n - 1;
-    var_b /= n - 1;
-    cov /= n - 1;
-
-    double c1 = 6.5025;
-    double c2 = 58.5225;
-
-    return ((2 * mean_a * mean_b + c1) * (2 * cov + c2)) / ((mean_a * mean_a + mean_b * mean_b + c1) * (var_a + var_b + c2));
-}
+    return ((2 * mean_a * mean_b + c1) * (2 * cov + c2)) / ((mean_a * mean_a + mean_b * mean_b + c1) * (var_a + var_b + c2)); // считаю и возвращаю SSIM
+} 
